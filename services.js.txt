@@ -1,0 +1,45 @@
+import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const DEFAULT_SERVICES = [
+ {id:"online-form",name:"Online Form Filling",description:"Online application forms bharne mein assistance.",price:"₹100",category:"forms",icon:"📄",published:true},
+ {id:"scholarship",name:"Scholarship Forms",description:"Scholarship application process aur form filling mein assistance.",price:"Ask for fee",category:"forms",icon:"🎓",published:true},
+ {id:"pan-card",name:"PAN Card Assistance",description:"PAN application process ke baare mein guidance aur form assistance.",price:"Ask for fee",category:"documents",icon:"🪪",published:true},
+ {id:"certificates",name:"Income / Caste / Residence Certificate",description:"Relevant certificate applications ke liye form assistance aur guidance.",price:"Ask for fee",category:"documents",icon:"📑",published:true},
+ {id:"bill-payment",name:"Bill Payment Assistance",description:"Available bill payment services ke liye enquiry karein.",price:"Ask for fee",category:"payments",icon:"💡",published:true},
+ {id:"printout",name:"Printout & Photocopy",description:"Documents ke printout aur photocopy ke liye contact karein.",price:"Ask for fee",category:"documents",icon:"🖨️",published:true},
+ {id:"schemes",name:"Government Scheme Assistance",description:"Available schemes ki information aur application guidance.",price:"Ask for fee",category:"forms",icon:"🏛️",published:true},
+ {id:"banking",name:"Banking / AEPS (if authorized)",description:"Banking/AEPS services sirf applicable authorization aur availability hone par.",price:"Ask for fee",category:"payments",icon:"🏦",published:true}
+];
+const categoryNames = {forms:"Forms & Applications",documents:"Documents & Certificates",payments:"Payments & Other"};
+let allServices = DEFAULT_SERVICES;
+function escapeHTML(value=""){return String(value).replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));}
+async function loadServices(){
+  if(window.SAHAJ_FIREBASE_READY){
+    try{
+      const app=getApps().length?getApps()[0]:initializeApp(window.SAHAJ_CONFIG.firebase);
+      const db=getFirestore(app);
+      const snap=await getDocs(query(collection(db,"services"),where("published","==",true)));
+      if(!snap.empty) allServices=snap.docs.map(d=>({id:d.id,...d.data()}));
+      else allServices=[];
+      return;
+    }catch(err){console.warn("Firebase services could not be loaded; using local demo data.",err);}
+  }
+  try { const saved=JSON.parse(localStorage.getItem("sahajServices")||"null"); if(Array.isArray(saved)) allServices=saved; } catch(e){}
+}
+function renderServices(){
+ const container=document.getElementById("services-list"); if(!container)return;
+ const queryText=(document.getElementById("service-search").value||"").trim().toLowerCase();
+ const category=document.getElementById("service-category").value;
+ const services=allServices.filter(s=>s.published!==false)
+  .filter(s=>category==="all"||s.category===category)
+  .filter(s=>`${s.name} ${s.description} ${s.category}`.toLowerCase().includes(queryText));
+ container.innerHTML=services.map((s,i)=>`<article class="service-card"><div class="service-icon ${["blue","violet","green","orange","teal","rose","indigo","slate"][i%8]}">${escapeHTML(s.icon||"📄")}</div><h3>${escapeHTML(s.name)}</h3><p>${escapeHTML(s.description)}</p><div class="service-card-bottom"><span class="price">${escapeHTML(s.price||"Ask for fee")}</span><a data-service-whatsapp="${escapeHTML(s.name)}" href="#">Enquire ↗</a></div><small class="category-note">${escapeHTML(categoryNames[s.category]||"Service")}</small></article>`).join("");
+ document.getElementById("services-empty").hidden=services.length!==0;
+ const digits=(window.SAHAJ_CONFIG.whatsappNumber||"").replace(/\D/g,"");
+ container.querySelectorAll("[data-service-whatsapp]").forEach(a=>{a.href=`https://wa.me/${digits}?text=${encodeURIComponent(`Namaste, mujhe ${a.dataset.serviceWhatsapp} ke baare mein details aur fees chahiye.`)}`;a.target="_blank";a.rel="noopener";});
+}
+document.addEventListener("DOMContentLoaded",async()=>{
+ const search=document.getElementById("service-search"),category=document.getElementById("service-category");
+ if(search&&category){await loadServices();search.addEventListener("input",renderServices);category.addEventListener("change",renderServices);renderServices();}
+});
