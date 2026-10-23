@@ -1,5 +1,11 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {
+  getAuth,
+  onAuthStateChanged,
+  GoogleAuthProvider,
+  signInWithPopup,
+  signOut
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const $=id=>document.getElementById(id);
@@ -89,12 +95,40 @@ document.addEventListener("DOMContentLoaded",()=>{
  $("add-service-btn").addEventListener("click",()=>openEditor());
  $("close-editor").addEventListener("click",closeEditor);$("cancel-editor").addEventListener("click",closeEditor);
  $("logout-btn").addEventListener("click",()=>auth&&signOut(auth));
- $("login-form").addEventListener("submit",async e=>{
-  e.preventDefault();if(!auth){setMessage("login-message","Firebase is not configured yet.");return;}
-  const email=$("admin-email").value.trim().toLowerCase(),password=$("admin-password").value;
-  if(email!==allowedEmail){setMessage("login-message","Please use the authorized owner email.");return;}
-  try{await signInWithEmailAndPassword(auth,email,password);setMessage("login-message","Signing in…");}
-  catch(err){console.error(err);setMessage("login-message","Login failed. Check email/password and ensure this owner user exists in Firebase Authentication.");}
- });
+$("google-login-btn").addEventListener("click", async () => {
+  if (!auth) {
+    setMessage("login-message", "Firebase is not configured.");
+    return;
+  }
+
+  try {
+    setMessage("login-message", "Google se sign in ho raha hai...");
+
+    const provider = new GoogleAuthProvider();
+    provider.setCustomParameters({
+      prompt: "select_account"
+    });
+
+    const result = await signInWithPopup(auth, provider);
+    const email = (result.user.email || "").toLowerCase();
+
+    if (email !== allowedEmail) {
+      await signOut(auth);
+      setMessage(
+        "login-message",
+        "Access denied! Sirf authorized owner account login kar sakta hai."
+      );
+      return;
+    }
+
+    setMessage("login-message", "Login successful!");
+  } catch (error) {
+    console.error("Google login error:", error);
+    setMessage(
+      "login-message",
+      "Google login failed. Dobara try karo aur browser console check karo."
+    );
+  }
+});
  if(configReady())initFirebase();else showSetup();
 });
