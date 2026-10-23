@@ -70,6 +70,14 @@ async function saveService(event){
  const id=$("service-id").value;
  const data={name:$("service-name").value.trim(),price:$("service-price").value.trim()||"Ask for fee",category:$("service-category-input").value,icon:$("service-icon").value.trim()||"📄",description:$("service-description").value.trim(),published:$("service-published").checked,updatedAt:serverTimestamp()};
  if(!data.name||!data.description){setMessage("editor-message","Name and description are required.");return;}
+ 
+await currentUser.reload();
+await currentUser.getIdToken(true);
+
+console.log("Admin email:", currentUser.email);
+console.log("Email verified:", currentUser.emailVerified);
+console.log("Firebase project:", window.SAHAJ_CONFIG.firebase.projectId);
+ 
  try{
   if(id){await updateDoc(doc(db,"services",id),data);}else{data.createdAt=serverTimestamp();await addDoc(collection(db,"services"),data);}
   await loadServices();closeEditor();setMessage("editor-message","Saved to Firebase.");
