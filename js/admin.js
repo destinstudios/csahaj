@@ -122,13 +122,13 @@ $("google-login-btn").addEventListener("click", async () => {
     }
 
     setMessage("login-message", "Login successful!");
-  } catch (error) {
-    console.error("Google login error:", error);
-    setMessage(
-      "login-message",
-      "Google login failed. Dobara try karo aur browser console check karo."
-    );
+} catch (error) {
+  console.error("Google login error:", error.code, error.message);
+
+  setMessage(
+    "login-message",
+    "Error: " + error.code + " — " + error.message
+  );
   }
-});
  if(configReady())initFirebase();else showSetup();
 });
