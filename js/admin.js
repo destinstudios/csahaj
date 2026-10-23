@@ -1,5 +1,11 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {
+  getAuth,
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  signOut,
+  sendEmailVerification
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const $=id=>document.getElementById(id);
@@ -106,3 +112,17 @@ document.addEventListener("DOMContentLoaded",()=>{
  });
  if(configReady())initFirebase();else showSetup();
 });
+window.sendOwnerVerification = async function () {
+  try {
+    if (!auth || !auth.currentUser) {
+      alert("Pehle Admin Panel mein login karo.");
+      return;
+    }
+
+    await sendEmailVerification(auth.currentUser);
+    alert("Verification email bhej diya gaya hai. Gmail inbox aur Spam folder check karo.");
+  } catch (err) {
+    console.error(err);
+    alert("Email nahi bheja ja saka: " + err.message);
+  }
+};
