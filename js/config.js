@@ -15,13 +15,13 @@ window.SAHAJ_CONFIG = {
   mapsQuery: "Lihai, Dhata-Khaga Road, Dhata, Fatehpur, Uttar Pradesh 212641",
   adminEmail: "adityasinghworks1612@gmail.com",
   firebase: {
-    apiKey: "AIzaSyCSLRivs-ZXOTWMStgfmP1xAdRXDSFzUwk",
-    authDomain: "chandan-sahaj.firebaseapp.com",
-    projectId: "chandan-sahaj",
-    storageBucket: "chandan-sahaj.firebasestorage.app",
-    messagingSenderId: "599153312755",
-    appId: "1:599153312755:web:ddebf125c39a9494314886"
-  }
+     apiKey: "AIzaSyCSLRivs-ZXOTWMStgfmP1xAdRXDSFzUwk",
+  authDomain: "chandan-sahaj.firebaseapp.com",
+  projectId: "chandan-sahaj",
+  storageBucket: "chandan-sahaj.firebasestorage.app",
+  messagingSenderId: "599153312755",
+  appId: "1:599153312755:web:ddebf125c39a9494314886"
+};
 };
 window.SAHAJ_FIREBASE_READY = Boolean(
   window.SAHAJ_CONFIG.firebase.apiKey &&
