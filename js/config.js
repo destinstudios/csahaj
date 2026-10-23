@@ -21,7 +21,7 @@ window.SAHAJ_CONFIG = {
   storageBucket: "chandan-sahaj.firebasestorage.app",
   messagingSenderId: "599153312755",
   appId: "1:599153312755:web:ddebf125c39a9494314886"
-};
+}
 };
 window.SAHAJ_FIREBASE_READY = Boolean(
   window.SAHAJ_CONFIG.firebase.apiKey &&
