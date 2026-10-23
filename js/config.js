@@ -12,8 +12,8 @@ window.SAHAJ_CONFIG = {
   whatsappNumber: "919648909066",
   phoneNumber: "9648909066",
   address: "Lihai, Dhata-Khaga Road, Dhata, Fatehpur, Uttar Pradesh 212641",
-  mapsQuery: "Lihai, Dhata-Khaga Road, Dhata, Fatehpur, Uttar Pradesh 212641",
-  adminEmail: "adityasinghworks1612@gmail.com",
+  mapsQuery: "25°34'09.6"N 81°11'35.4"E",
+  adminEmail: "adityasinghworks1612@gmail.com","adityasinghzrx@gmail.com",
   firebase: {
      apiKey: "AIzaSyCSLRivs-ZXOTWMStgfmP1xAdRXDSFzUwk",
   authDomain: "chandan-sahaj.firebaseapp.com",
