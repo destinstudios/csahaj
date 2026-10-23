@@ -2,9 +2,10 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import {
   getAuth,
   onAuthStateChanged,
-  signInWithEmailAndPassword,
-  signOut,
-  sendEmailVerification
+  sendSignInLinkToEmail,
+  isSignInWithEmailLink,
+  signInWithEmailLink,
+  signOut
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
@@ -103,26 +104,92 @@ document.addEventListener("DOMContentLoaded",()=>{
  $("add-service-btn").addEventListener("click",()=>openEditor());
  $("close-editor").addEventListener("click",closeEditor);$("cancel-editor").addEventListener("click",closeEditor);
  $("logout-btn").addEventListener("click",()=>auth&&signOut(auth));
- $("login-form").addEventListener("submit",async e=>{
-  e.preventDefault();if(!auth){setMessage("login-message","Firebase is not configured yet.");return;}
-  const email=$("admin-email").value.trim().toLowerCase(),password=$("admin-password").value;
-  if(email!==allowedEmail){setMessage("login-message","Please use the authorized owner email.");return;}
-  try{await signInWithEmailAndPassword(auth,email,password);setMessage("login-message","Signing in…");}
-  catch(err){console.error(err);setMessage("login-message","Login failed. Check email/password and ensure this owner user exists in Firebase Authentication.");}
- });
- if(configReady())initFirebase();else showSetup();
-});
-window.sendOwnerVerification = async function () {
-  try {
-    if (!auth || !auth.currentUser) {
-      alert("Pehle Admin Panel mein login karo.");
-      return;
-    }
+$("login-form").addEventListener("submit", async e => {
+  e.preventDefault();
 
-    await sendEmailVerification(auth.currentUser);
-    alert("Verification email bhej diya gaya hai. Gmail inbox aur Spam folder check karo.");
-  } catch (err) {
-    console.error(err);
-    alert("Email nahi bheja ja saka: " + err.message);
+  if (!auth) {
+    setMessage("login-message", "Firebase is not configured.");
+    return;
   }
-};
+
+  const email = $("admin-email").value.trim().toLowerCase();
+
+  if (email !== allowedEmail) {
+    setMessage("login-message", "Please use the authorized owner email.");
+    return;
+  }
+
+  try {
+    const actionCodeSettings = {
+      url: "https://destinstudios.github.io/csahaj/admin.html",
+      handleCodeInApp: true
+    };
+
+    await sendSignInLinkToEmail(auth, email, actionCodeSettings);
+
+    localStorage.setItem("emailForSignIn", email);
+    setMessage(
+      "login-message",
+      "Login link email kar diya gaya hai. Inbox aur Spam check karo."
+    );
+  } catch (err) {
+    console.error("Email link error:", err);
+    setMessage(
+      "login-message",
+      "Link send nahi hua: " + err.message
+    );
+  }
+});
+  
+if (configReady()) {
+  initFirebase();
+
+  if (isSignInWithEmailLink(auth, window.location.href)) {
+    (async () => {
+      let email = localStorage.getItem("emailForSignIn");
+
+      // Agar link kisi doosre device/browser par khola hai
+      if (!email) {
+        email = window.prompt(
+          "Login link jis email par aaya tha, woh email enter karo:"
+        );
+      }
+
+      if (!email) {
+        setMessage("login-message", "Email required hai.");
+        return;
+      }
+
+      email = email.trim().toLowerCase();
+
+      // Sirf owner account ko allow karo
+      if (email !== allowedEmail) {
+        setMessage("login-message", "Owner email match nahi karta.");
+        return;
+      }
+
+      try {
+        await signInWithEmailLink(auth, email, window.location.href);
+
+        localStorage.removeItem("emailForSignIn");
+
+        // URL se one-time sign-in code hata do
+        window.history.replaceState(
+          {},
+          document.title,
+          window.location.pathname
+        );
+
+        setMessage("login-message", "Login successful.");
+      } catch (err) {
+        console.error("Email link sign-in error:", err);
+        setMessage(
+          "login-message",
+          "Login link invalid ya expire ho sakta hai. Naya link mangao."
+        );
+      }
+    })();
+  }
+} else {
+  showSetup();
+}
